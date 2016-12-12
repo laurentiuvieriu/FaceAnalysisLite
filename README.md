@@ -15,8 +15,9 @@ The project is based on [1], which in turn uses DLib to initialize the CLNF trac
 
 The whole system runs on a simple RGB camera in real-time and requires no calibration (altough providing one could help increase performance)
 
+## How to install ... ##
 
-Dependencies (Ubuntu 14.04):
+### Dependencies (Ubuntu 14.04): ###
 
 * GCC
 	* sudo apt-get update
@@ -31,8 +32,7 @@ Dependencies (Ubuntu 14.04):
 * BLAS (for DLib)
 	* sudo apt-get install libopenblas-dev liblapack-dev
 
-
-Compiling the code:
+### Compiling the code: ###
 
 * get the source:
 	* git clone https://laurentiuvieriu@bitbucket.org/laurentiuvieriu/faceanalysislite.git
@@ -43,7 +43,7 @@ Compiling the code:
 	* cmake -D CMAKE_BUILD_TYPE=RELEASE ..
 	* make -j2
 
-Running:
+### Running: ###
 
 * I assume the project root (where all the source files are) to be <Root>
 * in <Root>/build/exe/processCam/ there should be an executable called 'processCam'.
