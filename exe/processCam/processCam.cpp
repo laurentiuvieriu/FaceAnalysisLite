@@ -193,9 +193,9 @@ int main(int argc, char** argv)
     if(!cap.open(camId))
         return 0;
 
-    cv::Mat emo_neg  = cv::imread("/home/radu/work/cpp/ACANTO_FaceAnalysis/data/emo_neg_small.jpg"); // 110 x 120 pix
-    cv::Mat emo_neu  = cv::imread("/home/radu/work/cpp/ACANTO_FaceAnalysis/data/emo_neu_small.jpg");
-    cv::Mat emo_pos  = cv::imread("/home/radu/work/cpp/ACANTO_FaceAnalysis/data/emo_pos_small.jpg");
+    cv::Mat emo_neg  = cv::imread("../../../data/emo_neg_small.jpg"); // 110 x 120 pix
+    cv::Mat emo_neu  = cv::imread("../../../data/emo_neu_small.jpg");
+    cv::Mat emo_pos  = cv::imread("../../../data/emo_pos_small.jpg");
 
     while(!done)
     {

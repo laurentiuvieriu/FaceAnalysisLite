@@ -2,8 +2,8 @@
 -cam 0
 
 #root folder for the pain detector and emotional valence
--rootDir_pain /home/radu/work/cpp/FaceAnalysisLite/exe/processCam/data/params_pain
--rootDir_valence /home/radu/work/cpp/FaceAnalysisLite/exe/processCam/data/params_valence/
+-rootDir_pain /home/radu/work/cpp/faceanalysislite/exe/processCam/data/params_pain/
+-rootDir_valence /home/radu/work/cpp/faceanalysislite/exe/processCam/data/params_valence/
 
 # output log file
 #-of /home/radu/work/cpp/20160922_OpenFace/OpenFace/exe/FeatureExtraction/outCam.log
