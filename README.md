@@ -10,7 +10,7 @@ This projects implements several face analysis components, such as:
 - emotional valence
 
 
-The project is based on [1], which in turn uses DLib to initialize the CLNF tracking model. The CLNF model tracks in real-time 68 facial landmarks and uses a 3D representation of these landmarks, from which the head position and orientation are derived. Using HOG representation, [1] also provides estimates of presence and intensity for 18 facial action units. In addition to [1] estimators for the pain level read on the face (probabilistic scale), as well as for emotional valence (continuous scale between -1 and 1) were developed.
+The project is based on [1], which in turn uses DLib to initialize the CLNF tracking model. The CLNF model tracks in real-time 68 facial landmarks and uses a 3D representation of these landmarks, from which the head position and orientation are derived. Using HOG representation, [1] also provides estimates of presence and intensity for 18 facial action units. In addition to [1], estimators for the pain level read on the face (probabilistic scale), as well as for emotional valence (continuous scale between -1 and 1) were developed.
 
 
 The whole system runs on a simple RGB camera in real-time and requires no calibration (altough providing one could help increase performance)
