@@ -1,0 +1,19 @@
+#camera index
+-cam 0
+#-fdir /home/radu/work/datasets/CMU_Pain/openFaceImages/042-ll042/ll042t1aaaff
+
+#root folder for the pain detector
+-rootDir_pain /home/radu/work/cpp/20160922_OpenFace/OpenFace/exe/processCam/data/params/
+
+#ignore line
+#-wild
+
+# output log file
+#-of /home/radu/work/cpp/20160922_OpenFace/OpenFace/exe/FeatureExtraction/outCam.log
+
+# output video file
+#-ov /home/radu/work/cpp/20160922_OpenFace/OpenFace/exe/processCam/outCamVid.avi
+
+#add flags to include in the log: -add2Dfp -add3Dfp -addMparams -addHeadPosition -addHeadPose -addAUs -addGaze -addFrameIdx -addTimestamp -addConfidence -addSuccess -addPainLevel
+#-addTimestamp -addHeadPose -addAUs_class -addFrameIdx
+-addPainLevel
