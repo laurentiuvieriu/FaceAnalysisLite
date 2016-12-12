@@ -53,7 +53,7 @@ Running:
 	* one can choose what the log contains, by adding flags from line 11, as seen in line 12. However, some of these flags are also used when plotting (such as headpose, valence or pain level). These should be enabled by default.
 
 * example: from the <Root> type
-	 ./build/exe/processCam/processCam ./data/settings.ini
+	* ./build/exe/processCam/processCam ./data/settings.ini
 
 
 [1] Baltru, Tadas, Peter Robinson, and Louis-Philippe Morency. "OpenFace: an open source facial behavior analysis toolkit." 2016 IEEE Winter Conference on Applications of Computer Vision (WACV). IEEE, 2016.
