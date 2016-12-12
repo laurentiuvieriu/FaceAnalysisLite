@@ -37,7 +37,7 @@ Compiling the code:
 * get the source:
 	* git clone https://laurentiuvieriu@bitbucket.org/laurentiuvieriu/faceanalysislite.git
 * compile (using CMake):
-	* cd FaceAnalysisLite
+	* cd faceanalysislite
 	* mkdir build
 	* cd build
 	* cmake -D CMAKE_BUILD_TYPE=RELEASE ..
