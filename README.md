@@ -35,7 +35,7 @@ Dependencies (Ubuntu 14.04):
 Compiling the code:
 
 * get the source:
-	* git clone https://github.com/TadasBaltrusaitis/OpenFace.git
+	* git clone https://laurentiuvieriu@bitbucket.org/laurentiuvieriu/faceanalysislite.git
 * compile (using CMake):
 	* cd FaceAnalysisLite
 	* mkdir build
