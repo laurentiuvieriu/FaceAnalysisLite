@@ -1,0 +1,14 @@
+#d
+100
+#patchSize
+112
+#stride
+0
+#featSize
+100
+#noPatches
+1
+#noChannels
+9
+#noTrees
+100
