@@ -15,8 +15,9 @@ The project is based on [1], which in turn uses DLib to initialize the CLNF trac
 
 The whole system runs on a simple RGB camera in real-time and requires no calibration (altough providing one could help increase performance)
 
+## How to install ... ##
 
-Dependencies (Ubuntu 14.04):
+### Dependencies (Ubuntu 14.04): ###
 
 * GCC
 	* sudo apt-get update
@@ -31,8 +32,7 @@ Dependencies (Ubuntu 14.04):
 * BLAS (for DLib)
 	* sudo apt-get install libopenblas-dev liblapack-dev
 
-
-Compiling the code:
+### Compiling the code: ###
 
 * get the source:
 	* git clone https://laurentiuvieriu@bitbucket.org/laurentiuvieriu/faceanalysislite.git
@@ -42,6 +42,18 @@ Compiling the code:
 	* cd build
 	* cmake -D CMAKE_BUILD_TYPE=RELEASE ..
 	* make -j2
+
+### Running: ###
+
+* I assume the project root (where all the source files are) to be <Root>
+* in <Root>/build/exe/processCam/ there should be an executable called 'processCam'.
+* the executable takes as argument a "settings.ini" file found in <Root>/data/. In this file, there are several options to be changed:
+	* the camera index: replace 0 with the camera index that the system assigns to the webcam (try ls /dev/video<Tab>)
+	* output log file: you can uncomment line 9 to write a log file. Provide a different path/name as desired
+	* one can choose what the log contains, by adding flags from line 11, as seen in line 12. However, some of these flags are also used when plotting (such as headpose, valence or pain level). These should be enabled by default.
+
+* example: from <Root>/build/exe/processCam/ type
+	* ./processCam ../../../data/settings.ini
 
 
 [1] Baltru, Tadas, Peter Robinson, and Louis-Philippe Morency. "OpenFace: an open source facial behavior analysis toolkit." 2016 IEEE Winter Conference on Applications of Computer Vision (WACV). IEEE, 2016.
