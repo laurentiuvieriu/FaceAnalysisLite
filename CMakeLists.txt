@@ -51,3 +51,4 @@ add_subdirectory(lib/local/FaceAnalyser)
 # executables
 add_subdirectory(exe/processCam)
 add_subdirectory(exe/processSub)
+add_subdirectory(exe/launchServer)
