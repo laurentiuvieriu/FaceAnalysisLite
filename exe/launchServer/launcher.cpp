@@ -6,20 +6,16 @@
 #include <zmq.hpp>
 #include <unistd.h>
 #include <boost/algorithm/string.hpp>
-//#include <boost/system>
 #include <filesystem/fstream.hpp>
 
-//#include <string.h>
-//#include <unistd.h>
 #include <signal.h>
-#include <list>
 std::string getErrMsg(int errnum);
 
 using namespace std;
 
 vector<string> get_arguments_from_file(const string fileName);
-void get_launcher_params(string &serverPort, string &camPubPort, string &faceAnalysisPubPort, string &heartRatePubPort,
-                         vector<string> &commRoots, vector<string> &commPaths, vector<vector<string>> &commArgs, vector<string> &arguments);
+string get_key_from_arguments(vector<string> &arguments, const string key);
+void get_launcher_params(vector<string> &commRoots, vector<string> &commPaths, vector<vector<string>> &commArgs, vector<string> &arguments);
 pid_t launch_process (const char *root, const char *path, char *const args[]);
 
 int main (int argc, char** argv) {
@@ -33,10 +29,13 @@ int main (int argc, char** argv) {
         settings_file = argv[1];
     }
 
+    vector<string> arguments = get_arguments_from_file(settings_file);
+
     //  Prepare our context and socket
+    const string serverPort = get_key_from_arguments(arguments, "-serverPort");
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://*:5555");
+    socket.bind (serverPort.c_str());
 
     std::vector <pid_t> pids;
 
@@ -60,15 +59,11 @@ int main (int argc, char** argv) {
             socket.send (reply);
         }else if (boost::iequals(req, "Start")) {
             std::cout << "Received Start request -> starting ..." << std::endl;
-            //  Do some 'work'
 
-            vector<string> arguments = get_arguments_from_file(settings_file);
-            string serverPort, camPubPort, faceAnalysisPubPort, heartRatePubPort;
             vector<string> commRoots, commPaths;
             vector<vector<string>> commArgs;
 
-            get_launcher_params(serverPort, camPubPort, faceAnalysisPubPort, heartRatePubPort,
-                                commRoots, commPaths, commArgs, arguments);
+            get_launcher_params(commRoots, commPaths, commArgs, arguments);
 
             int numComm = commArgs.size();
             vector<vector<char*>> allComms;
@@ -107,6 +102,14 @@ int main (int argc, char** argv) {
             zmq::message_t reply (16);
             memcpy (reply.data (), "Processes Killed", 16);
             socket.send (reply);
+        } else if (boost::iequals(req, "Stop")) {
+            std::cout << "Received Stoping request -> bbye..." << std::endl;
+
+            zmq::message_t reply (5);
+            memcpy (reply.data (), "BBye!", 5);
+            socket.send (reply);
+            socket.close();
+            return 0;
         } else {
             std::cout << "Unknown request ..." << std::endl;
             //  Do some 'work'
@@ -144,9 +147,18 @@ vector<string> get_arguments_from_file(const string fileName){
     else cout << "Unable to open settings file!" << endl;
     return arguments;
 }
+string get_key_from_arguments(vector<string> &arguments, const string key){
+    string out;
+    for(size_t i = 0; i < arguments.size(); ++i) {
+        if (arguments[i].compare(key) == 0) {
+            out = arguments[i + 1];
+            break;
+        }
+    }
+    return out;
+}
 
-void get_launcher_params(string &serverPort, string &camPubPort, string &faceAnalysisPubPort, string &heartRatePubPort,
-                         vector<string> &commRoots, vector<string> &commPaths, vector<vector<string>> &commArgs, vector<string> &arguments)
+void get_launcher_params(vector<string> &commRoots, vector<string> &commPaths, vector<vector<string>> &commArgs, vector<string> &arguments)
 {
     commRoots.clear();
     commPaths.clear();
@@ -160,41 +172,41 @@ void get_launcher_params(string &serverPort, string &camPubPort, string &faceAna
     }
 
     // First check if there is a root argument (so that videos and outputs could be defined more easilly)
-    for (size_t i = 0; i < arguments.size(); ++i)
-    {
-
-        if (arguments[i].compare("-serverPort") == 0)
-        {
-            serverPort = arguments[i + 1];
-            valid[i] = false;
-            valid[i + 1] = false;
-            i++;
-        }
-
-        if (arguments[i].compare("-camPubPort") == 0)
-        {
-            camPubPort = arguments[i + 1];
-            valid[i] = false;
-            valid[i + 1] = false;
-            i++;
-        }
-
-        if (arguments[i].compare("-faceAnalysisPubPort") == 0)
-        {
-            faceAnalysisPubPort = arguments[i + 1];
-            valid[i] = false;
-            valid[i + 1] = false;
-            i++;
-        }
-
-        if (arguments[i].compare("-heartRatePubPort") == 0)
-        {
-            heartRatePubPort = arguments[i + 1];
-            valid[i] = false;
-            valid[i + 1] = false;
-            i++;
-        }
-    }
+//    for (size_t i = 0; i < arguments.size(); ++i)
+//    {
+//
+//        if (arguments[i].compare("-serverPort") == 0)
+//        {
+//            serverPort = arguments[i + 1];
+//            valid[i] = false;
+//            valid[i + 1] = false;
+//            i++;
+//        }
+//
+//        if (arguments[i].compare("-camPubPort") == 0)
+//        {
+//            camPubPort = arguments[i + 1];
+//            valid[i] = false;
+//            valid[i + 1] = false;
+//            i++;
+//        }
+//
+//        if (arguments[i].compare("-faceAnalysisPubPort") == 0)
+//        {
+//            faceAnalysisPubPort = arguments[i + 1];
+//            valid[i] = false;
+//            valid[i + 1] = false;
+//            i++;
+//        }
+//
+//        if (arguments[i].compare("-heartRatePubPort") == 0)
+//        {
+//            heartRatePubPort = arguments[i + 1];
+//            valid[i] = false;
+//            valid[i + 1] = false;
+//            i++;
+//        }
+//    }
 
     int i= 0;
     while (i < arguments.size()- 2)
@@ -241,7 +253,10 @@ pid_t launch_process (const char *root, const char *path, char *const args[]){
     if (pID == 0)                // child
     {
         errno = 0;
-        chdir(root);
+        int ign = chdir(root);
+        if (ign != 0){
+            cout << "launcher.cpp -> launch_process: Unsuccessful folder change" << endl;
+        }
         int execReturn = execv (path, args);
         if(execReturn == -1)
         {

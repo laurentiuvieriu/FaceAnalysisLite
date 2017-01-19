@@ -14,7 +14,9 @@
 #include "utilsProcessSub.h"
 //#include "utilsProcessCam.h"
 #include <zmq.hpp>
+#include "zhelpers.hpp"
 #include <boost/circular_buffer.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace fer;
 
@@ -33,17 +35,68 @@ void get_double_from_arguments(vector<string> &arguments, string key, double& ke
     }
 }
 
+void read_arguments(vector<string> &arguments, string &pubPort, string &subPort, string &settingsFile) {
+
+    bool* valid = new bool[arguments.size()];
+    valid[0] = true;
+
+    // First check if there is a root argument (so that videos and outputs could be defined more easilly)
+    for (size_t i = 0; i < arguments.size(); ++i) {
+        if (arguments[i].compare("-pubPort") == 0) {
+            pubPort = arguments[i+ 1];
+            valid[i] = false;
+            valid[i + 1] = false;
+            i++;
+        }
+        if (arguments[i].compare("-subPort") == 0) {
+            subPort = arguments[i + 1];
+            valid[i] = false;
+            valid[i + 1] = false;
+            i++;
+        }
+        if (arguments[i].compare("-settings") == 0) {
+            settingsFile = arguments[i + 1];
+            valid[i] = false;
+            valid[i + 1] = false;
+            i++;
+        }
+    }
+
+    for (int i = (int)arguments.size() - 1; i >= 0; --i)
+    {
+        if (!valid[i])
+        {
+            arguments.erase(arguments.begin() + i);
+        }
+    }
+}
+
 
 int main(int argc, char** argv)
 {
+//  Usage: <path_to_exe>processSub -pubPort <cam pubPort> -settings <settings_file>
 
+    vector<string> argumentsComm = get_arguments(argc, argv);
+
+    string pubPort = "";
+    string subPort = "";
     string settings_file = "";
 
-    if (argc != 2){
-        cout << "Usage: <path_to_exe>processSub <settings_file>" << endl;
-        return 1;
-    } else{
-        settings_file = argv[1];
+    read_arguments(argumentsComm, pubPort, subPort, settings_file);
+
+    if (strcmp(pubPort.c_str(), "") == 1){
+        pubPort = "tcp://*:5556";
+        cout << "processSub.cpp -> main: Unspecified publisher port (-pubPort <port address>), using default value: " << pubPort << endl;
+    }
+
+    if (strcmp(subPort.c_str(), "") == 1){
+        subPort = "tcp://*:6000";
+        cout << "processSub.cpp -> main: Unspecified subscriber port (-subPort <port address>), using default value: " << subPort << endl;
+    }
+
+    if (strcmp(settings_file.c_str(), "") == 1){
+        cout << "processSub.cpp -> main: Unspecified settings file (-settings <settings file>), aborting... " << endl;
+        return 0;
     }
 
     vector<string> arguments = get_arguments_from_file(settings_file);
@@ -211,13 +264,14 @@ int main(int argc, char** argv)
     // Creating a face analyser that will be used for AU extraction
     FaceAnalysis::FaceAnalyser face_analyser(vector<cv::Vec3d>(), 0.7, 112, 112, au_loc, tri_loc);
 
+    // ----------------------------------------------------------------------
     // finally subscribe to the pub Id ...
     zmq::context_t context (1);
 
     //  Socket to talk to server
     std::cout << "Collecting updates from server…\n" << std::endl;
     zmq::socket_t subscriber (context, ZMQ_SUB);
-    const char* pub_adress = input_pubId[0].c_str();
+//    const char* pub_adress = input_pubId[0].c_str();
 
     uint64_t RCVBUF = 500000;
     subscriber.setsockopt(ZMQ_RCVBUF, &RCVBUF, sizeof(RCVBUF));
@@ -225,7 +279,26 @@ int main(int argc, char** argv)
     subscriber.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 
-    subscriber.connect(pub_adress);
+    subscriber.connect(pubPort.c_str());
+//    subscriber.connect(pub_adress);
+
+    // end of subscribing to publisher
+    // ----------------------------------------------------------------------
+    // now launch a publisher port for broadcasting results
+    zmq::context_t contextPub (1);
+
+    //  Socket to talk to server
+    std::cout << "Creating publisher context \n" << std::endl;
+    zmq::socket_t publisher (context, ZMQ_PUB);
+//    const char* pub_adress = input_pubId[0].c_str();
+
+    uint64_t SNDBUF = 500000;
+    publisher.setsockopt(ZMQ_SNDBUF, &SNDBUF, sizeof(SNDBUF));
+    publisher.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
+    publisher.bind(subPort.c_str());
+    // end of creating context for the publisher part
+    // ----------------------------------------------------------------------
+
     boost::circular_buffer<double> painVec(30);
     boost::circular_buffer<double> valenceVec(30);
     vector<double> valenceMap = {-0.81, -0.68, -0.41, -0.12, -0.10, 0.0, 0.9};
@@ -469,6 +542,11 @@ int main(int argc, char** argv)
             double valence_sum = std::accumulate(valenceVec.begin(), valenceVec.end(), 0.0);
             double valenceLevel = valence_sum/valenceVec.size();
 //            double valenceLevel = (double) argMax_valence;
+
+            s_sendmore(publisher, "valenceLevel");
+            s_send(publisher, boost::lexical_cast<std::string>(valenceLevel));
+            s_sendmore(publisher, "painLevel");
+            s_send(publisher, boost::lexical_cast<std::string>(painLevel));
 
             // Visualising the tracker
             visualise_tracking(captured_image, face_model, det_parameters, gazeDirection0, gazeDirection1, frame_count, fx, fy, cx, cy,
