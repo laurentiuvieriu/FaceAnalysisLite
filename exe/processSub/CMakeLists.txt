@@ -1,5 +1,6 @@
 #TBB library
 include_directories(${TBB_ROOT_DIR}/include)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/exe/processSub)
 
 file(GLOB project_SRC
     "*.h"

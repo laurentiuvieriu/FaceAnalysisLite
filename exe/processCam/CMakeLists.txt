@@ -1,11 +1,12 @@
 #TBB library
 include_directories(${TBB_ROOT_DIR}/include)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/exe/processCam)
 
 file(GLOB project_SRC
     "*.h"
     "*.cpp")
 
-add_executable(processCam ${project_SRC} utilsProcessCam.h utilsProcessCam.cpp ../launchServer/launcher.cpp)
+add_executable(processCam ${project_SRC} utilsProcessCam.h utilsProcessCam.cpp)
 
 # Move LandmarkDetector model
 file(GLOB files "../../lib/local/LandmarkDetector/model/*.txt")
