@@ -20,7 +20,7 @@ We have adopted a structure as in the figure bellow for controlling the resource
 [1]: https://bitbucket.org/repo/pEL7GK/images/1673340860-ZeroMQ_scheme.png "Optional title attribute"
 ![ZeroMQ_scheme.png][1]
 
-In the scheme, we assume an outside existing client and a set of outside subscribers (above and bellow the grey dotted lines). The client will pass "req<est>" commands to the Launcher (implemented as a server), which will respond with "rep<ly>" messages to the client. The launcher himself controls a set of components (the black arrows), such as the camera frame publisher or the various frame processors (Sub 1, Sub 2, ...). The control commands are limited to start/stop signals and some parameters (such as internal communication ports).
+In the scheme, we assume an outside existing client and a set of outside subscribers (above and bellow the grey dotted lines). The client will pass "req<uest>" commands to the Launcher (implemented as a server), which will respond with "rep<ly>" messages to the client. The launcher himself controls a set of components (the black arrows), such as the camera frame publisher or the various frame processors (Sub 1, Sub 2, ...). The control commands are limited to start/stop signals and some parameters (such as internal communication ports).
 
 The current state of project implements the the Launcher (/exe/launcher), the Camera stream processor (/exe/processPub) and one of the frame subscribers (/exe/processSub). 
 
