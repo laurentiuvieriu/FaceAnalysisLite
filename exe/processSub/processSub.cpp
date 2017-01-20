@@ -35,7 +35,7 @@ void get_double_from_arguments(vector<string> &arguments, string key, double& ke
     }
 }
 
-void read_arguments(vector<string> &arguments, string &pubPort, string &subPort, string &settingsFile) {
+void read_arguments(vector<string> &arguments, string &pubPort, string &subPort, string &settingsFile, bool &debugMode) {
 
     bool* valid = new bool[arguments.size()];
     valid[0] = true;
@@ -56,6 +56,13 @@ void read_arguments(vector<string> &arguments, string &pubPort, string &subPort,
         }
         if (arguments[i].compare("-settings") == 0) {
             settingsFile = arguments[i + 1];
+            valid[i] = false;
+            valid[i + 1] = false;
+            i++;
+        }
+        if (arguments[i].compare("-debugMode") == 0) {
+            stringstream data(arguments[i + 1]);
+            data >> debugMode;
             valid[i] = false;
             valid[i + 1] = false;
             i++;
@@ -81,8 +88,9 @@ int main(int argc, char** argv)
     string pubPort = "";
     string subPort = "";
     string settings_file = "";
+    bool debugMode = false;
 
-    read_arguments(argumentsComm, pubPort, subPort, settings_file);
+    read_arguments(argumentsComm, pubPort, subPort, settings_file, debugMode);
 
     if (strcmp(pubPort.c_str(), "") == 1){
         pubPort = "tcp://*:5556";
@@ -292,9 +300,9 @@ int main(int argc, char** argv)
     zmq::socket_t publisher (context, ZMQ_PUB);
 //    const char* pub_adress = input_pubId[0].c_str();
 
-    uint64_t SNDBUF = 500000;
-    publisher.setsockopt(ZMQ_SNDBUF, &SNDBUF, sizeof(SNDBUF));
-    publisher.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
+//    uint64_t SNDBUF = 5000;
+//    publisher.setsockopt(ZMQ_SNDBUF, &SNDBUF, sizeof(SNDBUF));
+//    publisher.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
     publisher.bind(subPort.c_str());
     // end of creating context for the publisher part
     // ----------------------------------------------------------------------
@@ -541,7 +549,20 @@ int main(int argc, char** argv)
             valenceVec.push_back(instant_valence);
             double valence_sum = std::accumulate(valenceVec.begin(), valenceVec.end(), 0.0);
             double valenceLevel = valence_sum/valenceVec.size();
-//            double valenceLevel = (double) argMax_valence;
+
+            cv::Vec6d pose_estimate_to_draw = LandmarkDetector::GetCorrectedPoseWorld(face_model, fx, fy, cx, cy);
+
+            double hp_tilt = (double) pose_estimate_to_draw[3] * (-1) * 180 / CV_PI;
+            s_sendmore(publisher, "headTilt");
+            s_send(publisher, boost::lexical_cast<std::string>(hp_tilt));
+
+            double hp_yaw = (double) pose_estimate_to_draw[4] * 180 / CV_PI;
+            s_sendmore(publisher, "headYaw");
+            s_send(publisher, boost::lexical_cast<std::string>(hp_yaw));
+
+            double hp_roll = (double) pose_estimate_to_draw[5] * 180 / CV_PI;
+            s_sendmore(publisher, "headRoll");
+            s_send(publisher, boost::lexical_cast<std::string>(hp_roll));
 
             s_sendmore(publisher, "valenceLevel");
             s_send(publisher, boost::lexical_cast<std::string>(valenceLevel));
@@ -549,8 +570,11 @@ int main(int argc, char** argv)
             s_send(publisher, boost::lexical_cast<std::string>(painLevel));
 
             // Visualising the tracker
-            visualise_tracking(captured_image, face_model, det_parameters, gazeDirection0, gazeDirection1, frame_count, fx, fy, cx, cy,
-                               face_analyser, painLevel, valenceLevel, output_head_pose, output_AUs_class);
+            if (debugMode) {
+                visualise_tracking(captured_image, face_model, det_parameters, gazeDirection0, gazeDirection1,
+                                   frame_count, fx, fy, cx, cy,
+                                   face_analyser, painLevel, valenceLevel, output_head_pose, output_AUs_class);
+            }
 
             // Output the landmarks, pose, gaze, parameters and AUs
             outputAllFeatures(&output_file, output_2D_landmarks, output_3D_landmarks, output_model_params, output_frame_idx,

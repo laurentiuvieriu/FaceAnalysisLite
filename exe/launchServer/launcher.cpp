@@ -91,7 +91,7 @@ int main (int argc, char** argv) {
             zmq::message_t reply (17);
             memcpy (reply.data (), "Processes Started", 17);
             socket.send (reply);
-        } else if (boost::iequals(req, "Kill")) {
+        } else if (boost::iequals(req, "Kill all")) {
             std::cout << "Received Kill request -> starting killing..." << std::endl;
             for (int i= 0; i< pids.size(); i++) {
                 cout << "Killing pid  " << pids[i] << " in 3 sec ...";
@@ -103,10 +103,10 @@ int main (int argc, char** argv) {
             memcpy (reply.data (), "Processes Killed", 16);
             socket.send (reply);
         } else if (boost::iequals(req, "Stop")) {
-            std::cout << "Received Stoping request -> bbye..." << std::endl;
+            std::cout << "Received Stoping request -> stopping ..." << std::endl;
 
-            zmq::message_t reply (5);
-            memcpy (reply.data (), "BBye!", 5);
+            zmq::message_t reply (7);
+            memcpy (reply.data (), "Stopped", 7);
             socket.send (reply);
             socket.close();
             return 0;
@@ -116,8 +116,8 @@ int main (int argc, char** argv) {
             sleep(1);
 
             //  Send reply back to client
-            zmq::message_t reply (6);
-            memcpy (reply.data (), "Unknown", 6);
+            zmq::message_t reply (7);
+            memcpy (reply.data (), "Unknown", 7);
             socket.send (reply);
         }
     }

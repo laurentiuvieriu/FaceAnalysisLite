@@ -12,8 +12,15 @@ int main () {
     //  Prepare our context and subscriber
     zmq::context_t context(1);
     zmq::socket_t subscriber (context, ZMQ_SUB);
+
+//    uint64_t RCVBUF = 0;
+//    subscriber.setsockopt(ZMQ_RCVBUF, &RCVBUF, sizeof(RCVBUF));
+//    uint64_t HWM = 1;
+//    subscriber.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
+
     subscriber.connect("tcp://*:6000");
-    subscriber.setsockopt( ZMQ_SUBSCRIBE, "valenceLevel", 1);
+    std::string filter = "headRoll";
+    subscriber.setsockopt( ZMQ_SUBSCRIBE, filter.c_str(), filter.length());
 
     while (1) {
 

@@ -43,7 +43,7 @@ void create_directory(string output_path)
     }
 }
 
-void read_arguments(vector<string> &arguments, int &camId, string &output_dir, bool &recFlag, string &port) {
+void read_arguments(vector<string> &arguments, int &camId, string &output_dir, bool &recFlag, string &port, bool &debugMode) {
 
 //    string separator = string(1, boost::filesystem::path::preferred_separator);
 
@@ -83,7 +83,13 @@ void read_arguments(vector<string> &arguments, int &camId, string &output_dir, b
             valid[i + 1] = false;
             i++;
         }
-
+        if (arguments[i].compare("-debugMode") == 0) {
+            stringstream data(arguments[i + 1]);
+            data >> debugMode;
+            valid[i] = false;
+            valid[i + 1] = false;
+            i++;
+        }
     }
 
     for (int i = (int)arguments.size() - 1; i >= 0; --i)
@@ -130,8 +136,9 @@ int main (int argc, char** argv) {
     bool recFlag = false;
     string subDir = "";
     string port = "";
+    bool debugMode = false;
 
-    read_arguments(arguments, camId, outDir, recFlag, port);
+    read_arguments(arguments, camId, outDir, recFlag, port, debugMode);
 
     if (strcmp(port.c_str(), "") == 1){
         port = "tcp://*5555";
@@ -170,6 +177,7 @@ int main (int argc, char** argv) {
     textOrig.y = 30;
 
     //  Prepare our context and publisher
+    cout << "processPub : preparing context for publishing...";
     zmq::context_t context (1);
     zmq::socket_t publisher (context, ZMQ_PUB);
     uint64_t SNDBUF = 500000;
@@ -177,6 +185,7 @@ int main (int argc, char** argv) {
     uint64_t HWM = 1;
     publisher.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
     publisher.bind(port.c_str());
+    cout << "done, now streaming data ..." << endl;
 
     while (1) {
 
@@ -193,12 +202,14 @@ int main (int argc, char** argv) {
         memcpy (message.data(), frame.data, len);
         publisher.send (message);
 
-        clock_t t2 = clock();
-        double frameRate = (double)CLOCKS_PER_SEC/ (double)(t2- t1);
-        string frameRateStr = "FPS: " + (boost::format("%.1f") % frameRate).str();
-        cv::putText(frame, frameRateStr.c_str(), textOrig, cv::FONT_HERSHEY_SIMPLEX, 0.4, CvScalar(0, 0, 255, 0));
+        if (debugMode) {
+            clock_t t2 = clock();
+            double frameRate = (double) CLOCKS_PER_SEC / (double) (t2 - t1);
+            string frameRateStr = "FPS: " + (boost::format("%.1f") % frameRate).str();
+            cv::putText(frame, frameRateStr.c_str(), textOrig, cv::FONT_HERSHEY_SIMPLEX, 0.4, CvScalar(0, 0, 255, 0));
 
-        cv::imshow("Publisher on port " + port, frame);
+            cv::imshow("Publisher on port " + port, frame);
+        }
 
         char c = (char)cvWaitKey(1);
         if(c==27) {
