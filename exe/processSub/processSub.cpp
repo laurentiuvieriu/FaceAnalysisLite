@@ -19,6 +19,7 @@
 #include "zhelpers.hpp"
 #include <boost/circular_buffer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace fer;
 
@@ -76,6 +77,13 @@ void read_arguments(vector<string> &arguments, string &pubPort, string &subPort,
             arguments.erase(arguments.begin() + i);
         }
     }
+}
+
+unsigned long GetCurrentTimeInMilliseconds()
+{
+    boost::posix_time::ptime time = boost::posix_time::microsec_clock::local_time();
+    boost::posix_time::time_duration duration( time.time_of_day() );
+    return duration.total_milliseconds();
 }
 
 
@@ -368,6 +376,9 @@ int main(int argc, char** argv)
         while(!captured_image.empty())
         {
 
+            // system time in ms
+            unsigned long sys_time = GetCurrentTimeInMilliseconds();
+
             // Grab the timestamp first
             if (video_input)
             {
@@ -495,13 +506,15 @@ int main(int argc, char** argv)
                 instant_painLevel = get_pain_level_from_face(face_analyser, forest_pain, params_pain);
             }
 
-            if (output_valence) {
-                vector<double> valence_pred;
-                valence_pred = get_valence_from_face(face_analyser, forest_valence, params_valence);
-                argMax_expression = std::distance(valence_pred.begin(), std::max_element(valence_pred.begin(), valence_pred.end()));
-                instant_valence = valenceMap[argMax_expression];
-                instant_arousal = arousalMap[argMax_expression];
-            }
+//            vector<double> valenceMap = {-0.81, -0.68, -0.41, -0.12, -0.92, 0.0, 0.9};
+//            vector<double> arousalMap = {-0.4, 0.49, 0.79, 0.79, 0.02, 0.00, 0.17};
+
+
+            vector<double> valence_pred;
+            valence_pred = get_expression_from_face(face_analyser, forest_valence, params_valence);
+            argMax_expression = std::distance(valence_pred.begin(), std::max_element(valence_pred.begin(), valence_pred.end()));
+            instant_valence = valenceMap[argMax_expression];
+            instant_arousal = (arousalMap[argMax_expression]+ 1)/2;
 
             painVec.push_back(instant_painLevel);
             double pain_sum = std::accumulate(painVec.begin(), painVec.end(), 0.0);
@@ -536,6 +549,9 @@ int main(int argc, char** argv)
             s_sendmore(publisher, "painLevel");
             s_send(publisher, boost::lexical_cast<std::string>(painLevel));
 
+            s_sendmore(publisher, "sys_time");
+            s_send(publisher, boost::lexical_cast<std::string>(sys_time));
+
             // Visualising the tracker
             if (debugMode) {
                 visualise_tracking(captured_image, face_model, det_parameters, gazeDirection0, gazeDirection1,
@@ -550,7 +566,7 @@ int main(int argc, char** argv)
                                   output_timestamp, output_confidence, output_success, output_head_position,
                                   output_head_pose, output_AUs_reg, output_AUs_class,
                                   output_gaze, output_pain_level, output_valence, output_arousal, face_model,
-                                  frame_count, time_stamp, detection_success, gazeDirection0, gazeDirection1,
+                                  frame_count, (double)sys_time, detection_success, gazeDirection0, gazeDirection1,
                                   pose_estimate, fx, fy, cx, cy, painLevel, valenceLevel, arousalLevel, face_analyser);
             }
             // output the tracked video

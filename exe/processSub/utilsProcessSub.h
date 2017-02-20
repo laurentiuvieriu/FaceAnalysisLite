@@ -89,4 +89,4 @@ void post_process_output_file(FaceAnalysis::FaceAnalyser& face_analyser, string 
 string get_key_from_arguments(vector<string> &arguments, const string key);
 
 double get_pain_level_from_face(FaceAnalysis::FaceAnalyser face_analyser, vector<fer::randomTree> forest, fer::paramList params);
-vector<double> get_valence_from_face(FaceAnalysis::FaceAnalyser face_analyser, vector<fer::randomTree> forest, fer::paramList params);
+vector<double> get_expression_from_face(FaceAnalysis::FaceAnalyser face_analyser, vector<fer::randomTree> forest, fer::paramList params);

@@ -19,7 +19,7 @@ int main () {
 //    subscriber.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
 
     subscriber.connect("tcp://*:6000");
-    std::string filter = "headRoll";
+    std::string filter = "sys_time";
     subscriber.setsockopt( ZMQ_SUBSCRIBE, filter.c_str(), filter.length());
 
     while (1) {

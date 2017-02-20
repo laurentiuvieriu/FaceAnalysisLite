@@ -83,7 +83,7 @@ void create_directory(string output_path)
 void visualise_tracking(cv::Mat& captured_image, cv::Mat& emo_neu, cv::Mat& emo_neg, cv::Mat& emo_pos, const LandmarkDetector::CLNF& face_model,
                         const LandmarkDetector::FaceModelParameters& det_parameters,
                         cv::Point3f gazeDirection0, cv::Point3f gazeDirection1, int frame_count, double fx, double fy, double cx, double cy,
-                        const FaceAnalysis::FaceAnalyser& face_analyser, double painLevel, double valenceLevel, bool output_head_pose, bool output_AUs_class)
+                        const FaceAnalysis::FaceAnalyser& face_analyser, double painLevel, double valenceLevel, double arousalLevel, bool output_head_pose, bool output_AUs_class)
 {
 
     // Drawing the facial landmarks on the face and the bounding box around it if tracking is successful and initialised
@@ -197,6 +197,8 @@ void visualise_tracking(cv::Mat& captured_image, cv::Mat& emo_neu, cv::Mat& emo_
 
     string valenceStr = "Valence: " + (boost::format("%.2f") % valenceLevel).str(); //emotions[(int)valenceLevel];
     cv::putText(captured_image, valenceStr, cv::Point(10, 60), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255, 0, 0), 1, CV_AA);
+    string arousalStr = "Arousal: " + (boost::format("%.2f") % arousalLevel).str(); //emotions[(int)valenceLevel];
+    cv::putText(captured_image, arousalStr, cv::Point(10, 80), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255, 0, 0), 1, CV_AA);
 
     cv::Size t = emo_neu.size();
     cv::Size ci = captured_image.size();
@@ -348,7 +350,7 @@ void post_process_output_file(FaceAnalysis::FaceAnalyser& face_analyser, string 
 void prepareOutputFile(std::ofstream* output_file, bool output_2D_landmarks, bool output_3D_landmarks,
                        bool output_model_params, bool output_frame_idx, bool output_timestamp, bool output_confidence,
                        bool output_success, bool output_head_position, bool output_head_pose, bool output_AUs_reg, bool output_AUs_class, bool output_gaze, bool output_pain_level,
-                       int num_landmarks, int num_model_modes, vector<string> au_names_class, vector<string> au_names_reg)
+                       bool output_valence, bool output_arousal, int num_landmarks, int num_model_modes, vector<string> au_names_class, vector<string> au_names_reg)
 {
 
     string prefferedDelimiter = ";";
@@ -462,6 +464,12 @@ void prepareOutputFile(std::ofstream* output_file, bool output_2D_landmarks, boo
     if (output_pain_level){
         *output_file << prefferedDelimiter << "pain_level";
     }
+    if (output_valence){
+        *output_file << prefferedDelimiter << "valence";
+    }
+    if (output_arousal){
+        *output_file << prefferedDelimiter << "arousal";
+    }
 
     *output_file << endl;
 
@@ -471,9 +479,9 @@ void prepareOutputFile(std::ofstream* output_file, bool output_2D_landmarks, boo
 void outputAllFeatures(std::ofstream *output_file, bool output_2D_landmarks, bool output_3D_landmarks,
                        bool output_model_params, bool output_frame_idx, bool output_timestamp, bool output_confidence,
                        bool output_success, bool output_head_position, bool output_head_pose, bool output_AUs_reg, bool output_AUs_class,
-                       bool output_gaze, bool output_pain_level, bool output_valence, const LandmarkDetector::CLNF &face_model, int frame_count, double time_stamp,
+                       bool output_gaze, bool output_pain_level, bool output_valence, bool output_arousal, const LandmarkDetector::CLNF &face_model, int frame_count, double time_stamp,
                        bool detection_success, cv::Point3f gazeDirection0, cv::Point3f gazeDirection1,
-                       const cv::Vec6d &pose_estimate, double fx, double fy, double cx, double cy, double painLevel, double valenceLevel,
+                       const cv::Vec6d &pose_estimate, double fx, double fy, double cx, double cy, double painLevel, double valenceLevel, double arousalLevel,
                        const FaceAnalysis::FaceAnalyser &face_analyser)
 {
     string prefferedDelimiter = ";";
@@ -673,6 +681,11 @@ void outputAllFeatures(std::ofstream *output_file, bool output_2D_landmarks, boo
         *output_file << prefferedDelimiter << boost::format("%03.3f") % (valenceLevel);
     }
 
+    if (output_arousal)
+    {
+        *output_file << prefferedDelimiter << boost::format("%03.3f") % (arousalLevel);
+    }
+
     *output_file << endl;
 }
 
@@ -681,7 +694,7 @@ void get_output_feature_params(vector<string> &output_similarity_aligned, vector
                                int &similarity_size, bool &grayscale, bool& verbose, bool& dynamic, bool &output_2D_landmarks, bool &output_3D_landmarks,
                                bool &output_model_params, bool &output_frame_idx, bool &output_timestamp, bool &output_confidence,
                                bool &output_success, bool &output_head_position, bool &output_head_pose, bool &output_AUs_reg, bool &output_AUs_class,
-                               bool &output_gaze, bool &output_pain_level, bool &output_valence, vector<string> &arguments)
+                               bool &output_gaze, bool &output_pain_level, bool &output_valence, bool &output_arousal, vector<string> &arguments)
 {
     output_similarity_aligned.clear();
     output_hog_aligned_files.clear();
@@ -830,6 +843,11 @@ void get_output_feature_params(vector<string> &output_similarity_aligned, vector
             output_valence = true;
             valid[i] = false;
         }
+        else if (arguments[i].compare("-addArousal") == 0)
+        {
+            output_arousal = true;
+            valid[i] = false;
+        }
     }
 
     for (int i = arguments.size() - 1; i >= 0; --i)
@@ -972,7 +990,7 @@ double get_pain_level_from_face(FaceAnalysis::FaceAnalyser face_analyser, vector
     double painLevel = pred[1]; //computePainLevel(pred);
     return painLevel;
 }
-vector<double> get_valence_from_face(FaceAnalysis::FaceAnalyser face_analyser, vector<fer::randomTree> forest, fer::paramList params){
+vector<double> get_expression_from_face(FaceAnalysis::FaceAnalyser face_analyser, vector<fer::randomTree> forest, fer::paramList params){
 
     auto aus_reg = face_analyser.GetCurrentAUsReg();
 
