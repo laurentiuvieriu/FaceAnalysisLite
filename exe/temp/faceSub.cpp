@@ -1,6 +1,6 @@
-//
-// Created by radu on 19/01/17.
-//
+// example of an outside subscriber that only needs headRoll estimates from the publisher
+// Author: RLV (UNITN)
+// last update: 20/02/17
 
 #include "zhelpers.hpp"
 #include "zmq.hpp"

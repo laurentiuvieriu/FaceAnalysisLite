@@ -54,7 +54,7 @@ void get_output_feature_params(vector<string> &output_similarity_aligned, vector
                                int &similarity_size, bool &grayscale, bool& verbose, bool& dynamic, bool &output_2D_landmarks, bool &output_3D_landmarks,
                                bool &output_model_params, bool &output_frame_idx, bool &output_timestamp, bool &output_confidence,
                                bool &output_success, bool &output_head_position, bool &output_head_pose, bool &output_AUs_reg, bool &output_AUs_class,
-                               bool &output_gaze, bool &output_pain_level, bool &output_valence, vector<string> &arguments);
+                               bool &output_gaze, bool &output_pain_level, bool &output_valence, bool &output_arousal, vector<string> &arguments);
 
 void get_image_input_output_params_feats(vector<vector<string> > &input_image_files, bool& as_video, vector<string> &arguments);
 
@@ -67,21 +67,21 @@ void output_HOG_frame(std::ofstream* hog_file, bool good_frame, const cv::Mat_<d
 // Visualising the results
 void visualise_tracking(cv::Mat& captured_image, const LandmarkDetector::CLNF& face_model, const LandmarkDetector::FaceModelParameters& det_parameters,
                         cv::Point3f gazeDirection0, cv::Point3f gazeDirection1, int frame_count, double fx, double fy, double cx, double cy,
-                        const FaceAnalysis::FaceAnalyser& face_analyser, double painLevel, double valenceLevel, bool output_head_pose, bool output_AUs_class);
+                        const FaceAnalysis::FaceAnalyser& face_analyser, double painLevel, double valenceLevel, double arousalLevel, bool output_head_pose, bool output_AUs_class);
 
 
 void prepareOutputFile(std::ofstream* output_file, bool output_2D_landmarks, bool output_3D_landmarks, bool output_model_params,
                        bool output_frame_idx, bool output_timestamp, bool output_confidence, bool output_success,
                        bool output_head_position, bool output_head_pose, bool output_AUs_reg, bool output_AUs_class, bool output_gaze, bool output_pain_level,
-                       int num_landmarks, int num_model_modes, vector<string> au_names_class, vector<string> au_names_reg);
+                       bool output_valence, bool output_arousal, int num_landmarks, int num_model_modes, vector<string> au_names_class, vector<string> au_names_reg);
 
 // Output all of the information into one file in one go (quite a few parameters, but simplifies the flow)
 void outputAllFeatures(std::ofstream *output_file, bool output_2D_landmarks, bool output_3D_landmarks,
                        bool output_model_params, bool output_frame_idx, bool output_timestamp, bool output_confidence,
                        bool output_success, bool output_head_position, bool output_head_pose, bool output_AUs_reg, bool output_AUs_class,
-                       bool output_gaze, bool output_pain_level, bool output_valence, const LandmarkDetector::CLNF &face_model, int frame_count, double time_stamp,
+                       bool output_gaze, bool output_pain_level, bool output_valence, bool output_arousal, const LandmarkDetector::CLNF &face_model, int frame_count, double time_stamp,
                        bool detection_success, cv::Point3f gazeDirection0, cv::Point3f gazeDirection1,
-                       const cv::Vec6d &pose_estimate, double fx, double fy, double cx, double cy, double painLevel, double valenceLevel,
+                       const cv::Vec6d &pose_estimate, double fx, double fy, double cx, double cy, double painLevel, double valenceLevel, double arousalLevel,
                        const FaceAnalysis::FaceAnalyser &face_analyser);
 
 void post_process_output_file(FaceAnalysis::FaceAnalyser& face_analyser, string output_file, bool dynamic);

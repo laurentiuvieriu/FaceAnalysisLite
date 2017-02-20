@@ -1,4 +1,8 @@
-// usage: <executable> -cam <camId> -dir <path> -rec <recFlag>
+
+// this program implements the system publisher, that handles camera frames and streams them to the subscribers
+// usage: <executable> -cam <camId> [-port <publishing_port> -debugMode <debug_mode (0, 1, default = 1)>
+// Author: RLV (UNITN)
+// last update: 20/02/17
 
 #include <zmq.hpp>
 #include <iostream>

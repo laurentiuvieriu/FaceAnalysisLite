@@ -1,6 +1,10 @@
-//
-// Created by radu on 11/01/17.
-//
+//the launcher is responsible with launching the frame publisher and the two (n?) subscribers that read and process the frames
+// it launches all components as separate services and keeps track of their PID
+// also, the launcher should specify the comm ports for both the Publisher and Subs (that will themselves publish their results), in addition to its own comm port
+// all these are read from the settings.ini file
+
+// Author: RLV (UNITN)
+// last update: 20/02/17
 
 #include <iostream>
 #include <zmq.hpp>

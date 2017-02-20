@@ -1,6 +1,9 @@
-//
-// Created by radu on 22/09/16.
-//
+// this program implements one of the system subscribers, that takes camera frames from the publisher specified by -pubPort
+// and performs face analysis (head pose estimation, AU recognition, pain and emotional valence estimation, etc).
+// the subscriber is, in turn, publisher to external subscribers (the publishing address is specified by -subPort)
+// usage: <executable> -pubPort <publishing_port> -subPort <subscriber_port> -settings <path_to_settings.ini>settings.ini -debugMode <debug_mode (0, 1, default = 1)>
+// Author: RLV (UNITN)
+// last update: 20/02/17 ..
 
 
 // Local includes
@@ -12,7 +15,6 @@
 
 #include "ferLocalFunctions.h"
 #include "utilsProcessSub.h"
-//#include "utilsProcessCam.h"
 #include <zmq.hpp>
 #include "zhelpers.hpp"
 #include <boost/circular_buffer.hpp>
@@ -25,7 +27,6 @@ void get_double_from_arguments(vector<string> &arguments, string key, double& ke
     bool* valid = new bool[arguments.size()];
     valid[0] = true;
 
-    // First check if there is a root argument (so that videos and outputs could be defined more easilly)
     for (size_t i = 0; i < arguments.size(); ++i) {
         if (arguments[i].compare(key) == 0) {
             stringstream data(arguments[i + 1]);
@@ -40,7 +41,6 @@ void read_arguments(vector<string> &arguments, string &pubPort, string &subPort,
     bool* valid = new bool[arguments.size()];
     valid[0] = true;
 
-    // First check if there is a root argument (so that videos and outputs could be defined more easilly)
     for (size_t i = 0; i < arguments.size(); ++i) {
         if (arguments[i].compare("-pubPort") == 0) {
             pubPort = arguments[i+ 1];
@@ -81,8 +81,6 @@ void read_arguments(vector<string> &arguments, string &pubPort, string &subPort,
 
 int main(int argc, char** argv)
 {
-//  Usage: <path_to_exe>processSub -pubPort <cam pubPort> -settings <settings_file>
-
     vector<string> argumentsComm = get_arguments(argc, argv);
 
     string pubPort = "";
@@ -109,43 +107,21 @@ int main(int argc, char** argv)
 
     vector<string> arguments = get_arguments_from_file(settings_file);
 
-//    double expected_fps = 30;
-//    get_double_from_arguments(arguments, "-expected_fps", expected_fps);
-
-    // initialization procedure ...
-    // Some initial parameters that can be overriden from command line
     vector<string> input_pubId, input_cam, input_files, depth_directories, output_files, tracked_videos_output;
 
     LandmarkDetector::FaceModelParameters det_parameters(arguments);
-    // Always track gaze in feature extraction
     det_parameters.track_gaze = true;
 
     // Get the input output file parameters
 
     // Indicates that rotation should be with respect to camera or world coordinates
-    bool use_world_coordinates;
+    bool use_world_coordinates = false;
     string output_codec; //not used but should
     LandmarkDetector::get_video_input_output_params(input_pubId, input_cam, input_files, depth_directories, output_files, tracked_videos_output, use_world_coordinates, output_codec, arguments);
 
     bool video_input = false;
     bool verbose = true;
     bool images_as_video = true;
-    bool input_cam_flag = false;
-    bool pub_sub_flag = false;
-
-    if (!input_cam.empty())
-    {
-        input_cam_flag = true;
-    }
-
-    if (!input_pubId.empty()){
-        pub_sub_flag = true;
-    }
-
-    if (input_cam_flag && pub_sub_flag){
-        cout << "Only one source of information is accepted! (either camera, or publisher frames)" << endl;
-        return 1;
-    }
 
     // Grab camera parameters, if they are not defined (approximate values will be used)
     float fx = 0, fy = 0, cx = 0, cy = 0;
@@ -196,17 +172,18 @@ int main(int argc, char** argv)
     bool output_gaze = false;
     bool output_pain_level = false;
     bool output_valence = false;
+    bool output_arousal = false;
 
     get_output_feature_params(output_similarity_align, output_hog_align_files, sim_scale, sim_size, grayscale, verbose, dynamic,
                               output_2D_landmarks, output_3D_landmarks, output_model_params, output_frame_idx, output_timestamp,
                               output_confidence, output_success, output_head_position, output_head_pose, output_AUs_reg, output_AUs_class,
-                              output_gaze, output_pain_level, output_valence, arguments);
+                              output_gaze, output_pain_level, output_valence, output_arousal, arguments);
 
     // Used for image masking
 
     // if output_pain_level is on, then load the pain models too ...
     paramList params_pain;
-    const string featDataRoot_pain = get_key_from_arguments(arguments, "-rootDir_pain");//"/home/radu/work/cpp/20160922_OpenFace/OpenFace/exe/processCam/data/params_pain/";
+    const string featDataRoot_pain = get_key_from_arguments(arguments, "-rootDir_pain");
     RV_readParamList(featDataRoot_pain, &params_pain);
 
     vector<randomTree> forest_pain;
@@ -214,7 +191,7 @@ int main(int argc, char** argv)
     forest_pain = RV_readForest(treesDir_pain, params_pain);
 
     paramList params_valence;
-    const string featDataRoot_valence = get_key_from_arguments(arguments, "-rootDir_valence");//"/home/radu/work/cpp/20160922_OpenFace/OpenFace/exe/processCam/data/params_pain/";
+    const string featDataRoot_valence = get_key_from_arguments(arguments, "-rootDir_valence");
     RV_readParamList(featDataRoot_valence, &params_valence);
 
     vector<randomTree> forest_valence;
@@ -276,10 +253,8 @@ int main(int argc, char** argv)
     // finally subscribe to the pub Id ...
     zmq::context_t context (1);
 
-    //  Socket to talk to server
     std::cout << "Collecting updates from server…\n" << std::endl;
     zmq::socket_t subscriber (context, ZMQ_SUB);
-//    const char* pub_adress = input_pubId[0].c_str();
 
     uint64_t RCVBUF = 500000;
     subscriber.setsockopt(ZMQ_RCVBUF, &RCVBUF, sizeof(RCVBUF));
@@ -288,28 +263,23 @@ int main(int argc, char** argv)
     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 
     subscriber.connect(pubPort.c_str());
-//    subscriber.connect(pub_adress);
-
+    bool pub_sub_flag = true;
     // end of subscribing to publisher
     // ----------------------------------------------------------------------
     // now launch a publisher port for broadcasting results
     zmq::context_t contextPub (1);
 
-    //  Socket to talk to server
     std::cout << "Creating publisher context \n" << std::endl;
     zmq::socket_t publisher (context, ZMQ_PUB);
-//    const char* pub_adress = input_pubId[0].c_str();
-
-//    uint64_t SNDBUF = 5000;
-//    publisher.setsockopt(ZMQ_SNDBUF, &SNDBUF, sizeof(SNDBUF));
-//    publisher.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
     publisher.bind(subPort.c_str());
     // end of creating context for the publisher part
     // ----------------------------------------------------------------------
 
     boost::circular_buffer<double> painVec(30);
     boost::circular_buffer<double> valenceVec(30);
-    vector<double> valenceMap = {-0.81, -0.68, -0.41, -0.12, -0.10, 0.0, 0.9};
+    boost::circular_buffer<double> arousalVec(30);
+    vector<double> valenceMap = {-0.81, -0.68, -0.41, -0.12, -0.92, 0.0, 0.9};
+    vector<double> arousalMap = {-0.4, 0.49, 0.79, 0.79, 0.02, 0.00, 0.17};
 
     // end of initialization ...
 
@@ -352,8 +322,8 @@ int main(int argc, char** argv)
             output_file.open(output_files[f_n], ios_base::out);
             prepareOutputFile(&output_file, output_2D_landmarks, output_3D_landmarks, output_model_params, output_frame_idx,
                               output_timestamp, output_confidence, output_success, output_head_position, output_head_pose, output_AUs_reg, output_AUs_class,
-                              output_gaze, output_pain_level, face_model.pdm.NumberOfPoints(), face_model.pdm.NumberOfModes(), face_analyser.GetAUClassNames(),
-                              face_analyser.GetAURegNames());
+                              output_gaze, output_pain_level, output_valence, output_arousal, face_model.pdm.NumberOfPoints(), face_model.pdm.NumberOfModes(),
+                              face_analyser.GetAUClassNames(), face_analyser.GetAURegNames());
         }
 
         // Saving the HOG features
@@ -516,17 +486,10 @@ int main(int argc, char** argv)
             }
 
             // run here the pain detector
-//            cv::Mat grayIn;
-//            cvtColor(sim_warped_img, grayIn, CV_BGR2GRAY);
-//            grayIn.convertTo(grayIn, CV_64FC1);
-//
-//            Mat featData;
-//            RV_featExtractionWholeFrame(grayIn, params_pain, featData);
-//            vector<double> pred = RV_testForest(featData, forest_pain, params_pain, 16);
-
             double instant_painLevel = 0;
             double instant_valence = 0;
-            int argMax_valence = 0;
+            double instant_arousal = 0;
+            int argMax_expression = 0;
 
             if (output_pain_level) {
                 instant_painLevel = get_pain_level_from_face(face_analyser, forest_pain, params_pain);
@@ -535,11 +498,9 @@ int main(int argc, char** argv)
             if (output_valence) {
                 vector<double> valence_pred;
                 valence_pred = get_valence_from_face(face_analyser, forest_valence, params_valence);
-//                instant_valence = std::inner_product(valenceMap.begin(), valenceMap.end(), valence_pred.begin(), 0.0);
-
-//                double max_valence = *std::max_element(valence_pred.begin(), valence_pred.end());
-                argMax_valence = std::distance(valence_pred.begin(), std::max_element(valence_pred.begin(), valence_pred.end()));
-                instant_valence = valenceMap[argMax_valence];
+                argMax_expression = std::distance(valence_pred.begin(), std::max_element(valence_pred.begin(), valence_pred.end()));
+                instant_valence = valenceMap[argMax_expression];
+                instant_arousal = arousalMap[argMax_expression];
             }
 
             painVec.push_back(instant_painLevel);
@@ -549,6 +510,10 @@ int main(int argc, char** argv)
             valenceVec.push_back(instant_valence);
             double valence_sum = std::accumulate(valenceVec.begin(), valenceVec.end(), 0.0);
             double valenceLevel = valence_sum/valenceVec.size();
+
+            arousalVec.push_back(instant_arousal);
+            double arousal_sum = std::accumulate(arousalVec.begin(), arousalVec.end(), 0.0);
+            double arousalLevel = arousal_sum/arousalVec.size();
 
             cv::Vec6d pose_estimate_to_draw = LandmarkDetector::GetCorrectedPoseWorld(face_model, fx, fy, cx, cy);
 
@@ -566,6 +531,8 @@ int main(int argc, char** argv)
 
             s_sendmore(publisher, "valenceLevel");
             s_send(publisher, boost::lexical_cast<std::string>(valenceLevel));
+            s_sendmore(publisher, "arousalLevel");
+            s_send(publisher, boost::lexical_cast<std::string>(arousalLevel));
             s_sendmore(publisher, "painLevel");
             s_send(publisher, boost::lexical_cast<std::string>(painLevel));
 
@@ -573,15 +540,19 @@ int main(int argc, char** argv)
             if (debugMode) {
                 visualise_tracking(captured_image, face_model, det_parameters, gazeDirection0, gazeDirection1,
                                    frame_count, fx, fy, cx, cy,
-                                   face_analyser, painLevel, valenceLevel, output_head_pose, output_AUs_class);
+                                   face_analyser, painLevel, valenceLevel, arousalLevel, output_head_pose, output_AUs_class);
             }
 
             // Output the landmarks, pose, gaze, parameters and AUs
-            outputAllFeatures(&output_file, output_2D_landmarks, output_3D_landmarks, output_model_params, output_frame_idx,
-                              output_timestamp, output_confidence, output_success, output_head_position, output_head_pose, output_AUs_reg, output_AUs_class,
-                              output_gaze, output_pain_level, output_valence, face_model, frame_count, time_stamp, detection_success, gazeDirection0, gazeDirection1,
-                              pose_estimate, fx, fy, cx, cy, painLevel, valenceLevel, face_analyser);
-
+            if (output_file.is_open()) {
+                outputAllFeatures(&output_file, output_2D_landmarks, output_3D_landmarks, output_model_params,
+                                  output_frame_idx,
+                                  output_timestamp, output_confidence, output_success, output_head_position,
+                                  output_head_pose, output_AUs_reg, output_AUs_class,
+                                  output_gaze, output_pain_level, output_valence, output_arousal, face_model,
+                                  frame_count, time_stamp, detection_success, gazeDirection0, gazeDirection1,
+                                  pose_estimate, fx, fy, cx, cy, painLevel, valenceLevel, arousalLevel, face_analyser);
+            }
             // output the tracked video
             if(!tracked_videos_output.empty())
             {

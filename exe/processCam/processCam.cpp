@@ -1,6 +1,8 @@
-//
-// Created by radu on 22/09/16.
-//
+
+// this program implements an autonomous camera processor, that handles camera frames and outputs facial analysis estimates
+// usage: <executable> <path_to_settings.ini>settings.ini
+// Author: RLV (UNITN)
+// last update: 20/02/17
 
 
 // Local includes
