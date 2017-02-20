@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.8)
 project (faceAnalysis)
 
+#message("CMAKE_SOURCE_DIR = " ${CMAKE_SOURCE_DIR})
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build/)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
@@ -52,4 +53,5 @@ add_subdirectory(exe/processCam)
 add_subdirectory(exe/processSub)
 add_subdirectory(exe/launchServer)
 add_subdirectory(exe/processPub)
-add_subdirectory(exe/temp)
+add_subdirectory(exe/temp/faceSub)
+add_subdirectory(exe/temp/launchClient)
