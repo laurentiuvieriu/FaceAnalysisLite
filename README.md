@@ -26,16 +26,24 @@ The current state of project implements the the Launcher (/exe/launchServer), th
 
 In its current state, the launch server understands and responds to the following commands from external clients:
 
-* "Ignore" - dummy command that causes no action from the server. The expected response: "Ignore"
-* "Start" - the server executes the commands found in its "settings.ini" file as separate processes, for which it stores PIDs. Expected response: "Processes Started"
-* "Kill all" - the server sends SIGKILL signals to all stored PIDs. Expected response: "Processes Killed" 
-* "Stop" - the server closes the communication sockets and  Expected response: "Stopped"
+* ``Ignore`` - dummy command that causes no action from the server. The expected response: ``Ignore``
+* ``Start`` - the server executes the commands found in its ``settings.ini`` file as separate processes, for which it stores PIDs. Expected response: ``Processes Started``
+* ``Kill all`` - the server sends SIGKILL signals to all stored PIDs. Expected response: ``Processes Killed`` 
+* ``Stop`` - the server closes the communication sockets and  Expected response: ``Stopped``
 
 In addition, the server responds to unknown requests with ``Unknown``. The communication ports controlled by the server are defined in ``/exe/launchServer/settings.ini``. In the same file, the commands the server needs to execute upon receiving the ``Start`` command are also defined.
+As a publisher, ``processSub`` broadcasts the following message keys, to which external programs can selectively subscribe:
+
+* ``headTilt`` - self-explanatory
+* ``headYaw`` - same
+* ``headRoll`` - same
+* ``valenceLevel`` - estimated level of emotional valence (scale between -1 and 1)
+* ``arousalLevel`` - estimated level of emotional arousal (scale between 0 and 1)
+* ``painLevel`` - estimated level of pain (scale between 0 and 1)
 
 ## How to install ... ##
 
-### Dependencies (Ubuntu 14.04): ###
+### Dependencies (tested on Ubuntu 14.04): ###
 
 * GCC
 	* sudo apt-get update
