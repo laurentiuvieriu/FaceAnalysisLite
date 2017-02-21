@@ -31,7 +31,7 @@ In its current state, the launch server understands and responds to the followin
 * "Kill all" - the server sends SIGKILL signals to all stored PIDs. Expected response: "Processes Killed" 
 * "Stop" - the server closes the communication sockets and  Expected response: "Stopped"
 
-In addition, the server responds to unknown requests with ``Unknown``.
+In addition, the server responds to unknown requests with ``Unknown``. The communication ports controlled by the server are defined in ``/exe/launchServer/settings.ini``. In the same file, the commands the server needs to execute upon receiving the ``Start`` command are also defined.
 
 ## How to install ... ##
 
