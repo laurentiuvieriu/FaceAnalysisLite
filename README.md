@@ -9,7 +9,7 @@ This projects implements several face analysis components, such as:
 - emotional valence
 - communication protocols using ZeroMQ
 
-The project is based on [1], which in turn uses DLib to initialize the CLNF tracking model. The CLNF model tracks in real-time 68 facial landmarks and uses a 3D representation of these landmarks, from which the head position and orientation are derived. Using HOG representation, [1] also provides estimates of presence and intensity for 18 facial action units. In addition to [1], estimators for the pain level read on the face (probabilistic scale), as well as for emotional valence (continuous scale between -1 and 1) were developed.
+The project is based on [1], which in turn uses DLib to initialize the CLNF tracking model. The CLNF model tracks in real-time 68 facial landmarks and uses a 3D representation of these landmarks, from which the head position and orientation are derived. Using HOG representation, [1] also provides estimates of presence and intensity for 18 facial action units. In addition to [1], estimators for the pain level read on the face (probabilistic scale), as well as for emotional valence (continuous scale between -1 and 1) and arousal (continuous scale between 0 and 1) were developed.
 
 The whole system runs on a simple RGB camera in real-time and requires no calibration (although providing one could help increase performance)
 
@@ -20,7 +20,7 @@ We have adopted a structure as in the figure bellow for controlling the resource
 [1]: https://bitbucket.org/repo/pEL7GK/images/1673340860-ZeroMQ_scheme.png "Optional title attribute"
 ![ZeroMQ_scheme.png][1]
 
-In the scheme, we assume an outside existing client and a set of outside subscribers (above and bellow the grey dotted lines). The client will pass request (req) commands to the Launcher (implemented as a server), which will respond with reply (rep) messages to the client. The launcher himself controls a set of components (the black arrows), such as the camera frame publisher or the various frame processors (Sub 1, Sub 2, ...). The control commands are limited to start/stop signals and some parameters (such as internal communication ports).
+In the scheme, we assume an outside existing client and a set of outside subscribers (above and below the grey dotted lines). The client will pass request (req) commands to the Launcher (implemented as a server), which will respond with reply (rep) messages to the client. The launcher himself controls a set of components (the black arrows), such as the camera frame publisher or the various frame processors (Sub 1, Sub 2, ...). The control commands are limited to start/stop signals and some parameters (such as internal communication ports).
 
 The current state of project implements the the Launcher (/exe/launcher), the Camera stream processor (/exe/processPub) and one of the frame subscribers (/exe/processSub). 
 
