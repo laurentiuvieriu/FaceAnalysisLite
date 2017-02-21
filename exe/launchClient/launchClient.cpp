@@ -41,7 +41,7 @@ int main ()
     std::string rep = std::string(static_cast<char*>(reply.data()), reply.size());
     std::cout << "response from server: " << rep << std::endl;
 
-    sleep(60);
+    sleep(30);
     zmq::message_t request_1 (8);
     memcpy (request_1.data (), "Kill all", 8);
     std::cout << "Sending Kill request... ";

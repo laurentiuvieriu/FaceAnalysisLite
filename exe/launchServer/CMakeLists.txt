@@ -4,6 +4,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/exe/launchServer)
 
-set(SOURCE_FILES launcher.cpp)
-add_executable(launcher ${SOURCE_FILES})
-target_link_libraries(launcher zmq ${Boost_LIBRARIES})
+set(SOURCE_FILES launchServer.cpp)
+add_executable(launchServer ${SOURCE_FILES})
+target_link_libraries(launchServer zmq ${Boost_LIBRARIES})

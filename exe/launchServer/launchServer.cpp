@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <boost/algorithm/string.hpp>
 #include <filesystem/fstream.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include <signal.h>
 std::string getErrMsg(int errnum);
@@ -82,7 +84,7 @@ int main (int argc, char** argv) {
                 allComms.push_back(buffFull);
             }
 
-            cout << "launcher.cpp: found " << numComm << " commands in the settings file, executing ..." << endl;
+            cout << "launchServer.cpp: found " << numComm << " commands in the settings file, executing ..." << endl;
 
             for (int i= 0; i< numComm; i++){
                 pid_t pID = launch_process(&commRoots[i].front(), &commPaths[i].front(), &allComms[i].front());
@@ -252,14 +254,16 @@ void get_launcher_params(vector<string> &commRoots, vector<string> &commPaths, v
 
 
 pid_t launch_process (const char *root, const char *path, char *const args[]){
-    // launching the first subscriber ...
     pid_t pID = fork();
-    if (pID == 0)                // child
+    if (pID == 0)
     {
         errno = 0;
-        int ign = chdir(root);
+        boost::filesystem::path full_path( boost::filesystem::current_path() );
+        boost::filesystem::path complete_path = full_path / root;
+
+        int ign = chdir(complete_path.c_str());
         if (ign != 0){
-            cout << "launcher.cpp -> launch_process: Unsuccessful folder change" << endl;
+            cout << "launchServer.cpp -> launch_process: Unsuccessful folder change" << endl;
         }
         int execReturn = execv (path, args);
         if(execReturn == -1)
