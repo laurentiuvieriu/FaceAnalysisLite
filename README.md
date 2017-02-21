@@ -71,4 +71,4 @@ In its current state, the launch server understands and responds to the followin
 	* ``./processCam ../../../exe/processCam/settings.ini``
 
 
-[1] Baltru, Tadas, Peter Robinson, and Louis-Philippe Morency. "OpenFace: an open source facial behavior analysis toolkit." 2016 IEEE Winter Conference on Applications of Computer Vision (WACV). IEEE, 2016.
+[1] Baltru, Tadas, Peter Robinson, and Louis-Philippe Morency. "OpenFace: an open source facial behavior analysis toolkit." In IEEE  WACV, 2016.
