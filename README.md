@@ -40,6 +40,7 @@ As a publisher, ``processSub`` broadcasts the following message keys, to which e
 * ``valenceLevel`` - estimated level of emotional valence (scale between -1 and 1)
 * ``arousalLevel`` - estimated level of emotional arousal (scale between 0 and 1)
 * ``painLevel`` - estimated level of pain (scale between 0 and 1)
+* ``sys_time`` - system time (time of the day in milliseconds)
 
 ## How to install ... ##
 
