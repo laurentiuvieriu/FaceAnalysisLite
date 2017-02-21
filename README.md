@@ -51,7 +51,7 @@ As a publisher, ``processSub`` broadcasts the following message keys, to which e
 	* sudo apt-get install build-essential
 * CMake
 	* sudo apt-get install cmake
-*  OpenCV 3.1.0
+* OpenCV 3.1.0
 	* I used this source: http://docs.opencv.org/3.0-beta/doc/tutorials/introduction/linux_install/linux_install.html
 	* If you use the same, make sure to install the optionals too (TBB is there and is required)
 * Boost
