@@ -22,7 +22,13 @@ We have adopted a structure as in the figure bellow for controlling the resource
 
 In the scheme, we assume an outside existing client and a set of outside subscribers (above and below the grey dotted lines). The client will pass request (req) commands to the Launcher (implemented as a server), which will respond with reply (rep) messages to the client. The launcher himself controls a set of components (the black arrows), such as the camera frame publisher or the various frame processors (Sub 1, Sub 2, ...). The control commands are limited to start/stop signals and some parameters (such as internal communication ports).
 
-The current state of project implements the the Launcher (/exe/launcher), the Camera stream processor (/exe/processPub) and one of the frame subscribers (/exe/processSub). 
+The current state of project implements the the Launcher (/exe/launchServer), the camera stream processor (/exe/processPub) and one of the frame subscribers (/exe/processSub). Additionally, for the sake of completeness, a launch client (/exe/launchClient) as well as an external subscriber (/exe/faceSub) were also implemented. 
+
+In its current state, the launch server understands and responds to the following commands from external clients:
+* "Ignore" - dummy command that causes no action from the server. The expected response: "Ignore"
+* "Start" - the server executes the commands found in its "settings.ini" file as separate processes, for which it stores PIDs. Expected response: "Processes Started"
+* "Kill all" - the server sends SIGKILL signals to all stored PIDs. Expected response: "Processes Killed" 
+* "Stop" - the server closes the communication sockets and  Expected response: "Stopped"
 
 ## How to install ... ##
 
