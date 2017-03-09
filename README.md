@@ -82,5 +82,7 @@ As a publisher, ``processSub`` broadcasts the following message keys, to which e
 * example: from ``<Root>/build/exe/processCam/`` type
 	* ``./processCam ../../../exe/processCam/settings.ini``
 
+* update: one can simply ``sh`` the ``run_processCam.sh`` for the standalone camera processing component or the ``run_all.sh`` for a complete demo of all the ZMQ components.
+
 
 [1] Baltru, Tadas, Peter Robinson, and Louis-Philippe Morency. "OpenFace: an open source facial behavior analysis toolkit." In IEEE  WACV, 2016.
