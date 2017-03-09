@@ -18,18 +18,30 @@ int main () {
 //    uint64_t HWM = 1;
 //    subscriber.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
 
-    subscriber.connect("tcp://*:6000");
-    std::string filter = "sys_time";
-    subscriber.setsockopt( ZMQ_SUBSCRIBE, filter.c_str(), filter.length());
+    subscriber.connect("tcp://localhost:5554");
+//    std::string filter = "headYaw_mean";
+//    subscriber.setsockopt( ZMQ_SUBSCRIBE, filter.c_str(), filter.length());
+
+    subscriber.setsockopt( ZMQ_SUBSCRIBE, "", 0);
 
     while (1) {
 
-        //  Read envelope with address
-        std::string address = s_recv (subscriber);
-        //  Read message contents
-        std::string contents = s_recv (subscriber);
+        zmq::message_t update;
+        subscriber.recv(&update);
 
-        cout << "[" << address << "] " << contents << endl;
+        int zipcode, temperature;
+
+        std::istringstream iss(static_cast<char*>(update.data()));
+        iss >> zipcode >> temperature;
+
+        cout << "[" << zipcode << "] " << temperature << endl;
+
+//        //  Read envelope with address
+//        std::string address = s_recv (subscriber);
+//        //  Read message contents
+//        std::string contents = s_recv (subscriber);
+//
+//        cout << "[" << address << "] " << contents << endl;
     }
     return 0;
 }

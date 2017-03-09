@@ -278,7 +278,10 @@ int main(int argc, char** argv)
     zmq::context_t contextPub (1);
 
     std::cout << "Creating publisher context \n" << std::endl;
-    zmq::socket_t publisher (context, ZMQ_PUB);
+    zmq::socket_t publisher (contextPub, ZMQ_PUB);
+//    uint64_t SNDBUF = 50000;
+//    publisher.setsockopt(ZMQ_SNDBUF, &SNDBUF, sizeof(SNDBUF));
+//    publisher.setsockopt(ZMQ_HWM, &HWM, sizeof(HWM));
     publisher.bind(subPort.c_str());
     // end of creating context for the publisher part
     // ----------------------------------------------------------------------

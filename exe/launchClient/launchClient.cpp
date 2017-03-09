@@ -17,7 +17,7 @@ int main ()
 
     //  Do 10 requests, waiting each time for a response
 
-    for (int request_nbr = 0; request_nbr != 3; request_nbr++) {
+    for (int request_nbr = 0; request_nbr <= 1; request_nbr++) {
         zmq::message_t request (6);
         memcpy (request.data (), "Ignore", 6);
         std::cout << "Sending Ignore message (" << request_nbr << ")...";
@@ -41,7 +41,7 @@ int main ()
     std::string rep = std::string(static_cast<char*>(reply.data()), reply.size());
     std::cout << "response from server: " << rep << std::endl;
 
-    sleep(30);
+    sleep(600);
     zmq::message_t request_1 (8);
     memcpy (request_1.data (), "Kill all", 8);
     std::cout << "Sending Kill request... ";
